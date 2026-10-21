@@ -1,0 +1,42 @@
+# Licences
+
+## Dati un teksti / Data and texts
+
+Pārskata dati un teksti (mapes `dati/`, `avoti/` un `assets/data.js`) ir licencēti ar
+Creative Commons Attiecinājums 4.0 Starptautisko licenci (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/legalcode.lv
+
+Atsauce: Rīgas enerģētikas aģentūra (REA), Rīgas SECAP 2022–2030 vidusposma pārskats.
+
+The data and texts are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+## Programmkods / Code
+
+MIT License
+
+Copyright (c) 2026 Rīgas enerģētikas aģentūra
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or
+substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+## Fonts / Font
+
+Outfit – SIL Open Font License 1.1, sk. `assets/fonts/OFL-LICENSE.txt`.
+
+## Zīmols / Brand
+
+Rīgas logotips un zīmola elementi nav ietverti iepriekš minētajās licencēs.
+The Riga logo and brand elements are not covered by the licences above.
