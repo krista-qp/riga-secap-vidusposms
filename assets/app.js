@@ -25,7 +25,7 @@ function autoDec(v){const a=Math.abs(v);return a===0?0:a>=100?0:a>=10?1:a>=1?2:3
 function fa(v){return v==null?'–':fmt(v,autoDec(v))}
 function sgn(v,d){if(v==null)return '–';const s=v>0.00001?'+':v<-0.00001?'−':'';return s+fmt(Math.abs(v),d)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function lvText(s){return esc(s).replace(/(\d)\.(\d)(?!\.)/g,'$1,$2').replace(/(\d)%/g,'$1 %').replace(/-(\d)/g,'−$1').replace(/m2\b/g,'m²').replace(/m3\b/g,'m³').replace(/CO2/g,'CO₂')}
+function lvText(s){return esc(s).replace(/\d+(?:\.\d+)+/g,m=>m.split('.').length===2?m.replace('.',','):m).replace(/(\d)%/g,'$1 %').replace(/-(\d)/g,'−$1').replace(/m2\b/g,'m²').replace(/m3\b/g,'m³').replace(/CO2/g,'CO₂')}
 function unitLv(u){return (u||'').replace(/m2\b/g,'m²').replace(/m3\b/g,'m³').replace(/CO2/g,'CO₂')}
 const URL_RE=/https?:\/\/[^\s<>"]+[^\s<>".,;:)]/g;
 function shortUrl(u){try{const x=new URL(u);let p=(x.hostname.replace(/^www\./,'')+x.pathname).replace(/\/$/,'');return p.length>48?p.slice(0,46)+'…':p}catch(e){return u}}
@@ -34,9 +34,8 @@ function link(u,label){return `<a href="${esc(u)}" target="_blank" rel="noopener
 function rich(s){s=String(s||'');let out='',last=0;s.replace(URL_RE,(u,i)=>{out+=esc(s.slice(last,i))+link(u);last=i+u.length;return u});return out+esc(s.slice(last))}
 const TODO_RE=/^(papildināt|…|\.\.\.|nepieciešama papildu informācija)\.?$/i;
 const isTodo=s=>TODO_RE.test(String(s||'').trim());
-function mailto(subject,context){const e=D.site.contact_email||'';const body=`${context}\n\nPapildinājums vai labojums:\n\n\nAvots / kontaktpersona:\n`;return `mailto:${e}?subject=${encodeURIComponent('SECAP vidusposms: '+subject)}&body=${encodeURIComponent(body)}`}
-function todoBox(subject,context,text){return `<p class="todo">${esc(text||'Šeit trūkst informācijas.')} <a href="${mailto(subject,context)}">Papildināt →</a></p>`}
-function prose(list,subject,context,cls){if(!list||!list.length)return '';return `<div class="prose${cls?' '+cls:''}">${list.map(p=>isTodo(p)?todoBox(subject,context):`<p>${rich(p)}</p>`).join('')}</div>`}
+function todoBox(subject,context,text){return `<p class="na">${esc(text||'Informācija nav pieejama.')}</p>`}
+function prose(list,subject,context,cls){if(!list||!list.length)return '';return `<div class="prose${cls?' '+cls:''}">${list.map(p=>isTodo(p)?todoBox(subject,context,/^(…|\.\.\.)$/.test(p.trim())?null:p.trim().replace(/^papildināt\.?$/i,'Informācija nav pieejama.')):`<p>${rich(p)}</p>`).join('')}</div>`}
 function invTxt(v){if(v==null)return null;return v>=1000?fmt(v/1000,v>=100000?0:1)+' milj. EUR':fmt(v,0)+' tūkst. EUR'}
 
 /* ---------------- statusi ---------------- */
@@ -119,17 +118,16 @@ const NAV=[['index.html','Sākums','home'],['pasvaldiba.html','Pašvaldība','pa
 function shell(o){
   const cur=SEC||PAGE;const en=PAGE==='en-summary';
   const band=`<a class="skip" href="#main">${en?'Skip to content':'Pāriet uz saturu'}</a><div class="band"><div class="wrap">
-    <div class="topbar"><a class="logo" href="index.html" aria-label="Rīga – sākumlapa">${LOGO}</a><span class="draft">${en?'Draft':esc(D.site.version_label)} · ${en?'data':'dati'} 2020–2025</span></div>
+    <div class="topbar"><a class="logo" href="index.html" aria-label="Rīga – sākumlapa">${LOGO}</a><span class="ver">${en?'Final version · October 2026':esc(D.site.version_label)}</span></div>
     <header class="top"><div class="eyebrow">${esc(o.eyebrow||(en?'Riga Sustainable Energy and Climate Action Plan 2022–2030':'Rīgas ilgtspējīgas enerģētikas un klimata rīcības plāns 2022–2030'))}</div><h1>${o.title}</h1>${o.lede?`<p class="lede">${o.lede}</p>`:''}${o.extra||''}</header></div></div>
     <nav class="site" aria-label="${en?'Main navigation':'Galvenā navigācija'}"><ul>${NAV.map(n=>n?`<li><a href="${n[0]}"${n[2]===cur?' aria-current="page"':''}>${n[1]}</a></li>`:'<li class="sep" aria-hidden="true"></li>').join('')}</ul></nav>`;
   document.getElementById('top').innerHTML=band;
   const ft=document.getElementById('foot');
   ft.className='site wrap';
-  ft.innerHTML=en?`<div><p>Riga SECAP 2022–2030 · mid-term review · data 2020–2025 · draft (${esc(D.meta.built)}).</p><p>Prepared by the Riga Energy Agency (REA). Data and texts: <a href="${D.site.license_url}">${D.site.license}</a>.</p></div><span class="logo" role="img" aria-label="Rīga">${LOGO}</span>`
-    :`<div><p>Rīgas SECAP 2022–2030 · vidusposma pārskats · dati 2020–2025 · ${esc(D.site.version_label.toLowerCase())} (${esc(D.meta.built)}).</p><p>Sagatavoja Rīgas valstspilsētas pašvaldības aģentūra “Rīgas enerģētikas aģentūra” (REA). Dati un teksti: <a href="${D.site.license_url}">${D.site.license}</a> · <a href="dati.html">Lejupielādēt datus</a> · <a href="par.html#pieklustamiba">Piekļūstamība</a></p></div><span class="logo" role="img" aria-label="Rīga">${LOGO}</span>`;
+  ft.innerHTML=en?`<div><p>Riga SECAP 2022–2030 · mid-term review · data 2020–2025 · final version, October 2026.</p><p>Prepared by the Riga Energy Agency (REA). Contact: <a href="mailto:${esc(D.site.contact_email)}">${esc(D.site.contact_email)}</a>. Data and texts: <a href="${D.site.license_url.replace('deed.lv','')}">${D.site.license}</a>.</p></div><span class="logo" role="img" aria-label="Rīga">${LOGO}</span>`
+    :`<div><p>Rīgas SECAP 2022–2030 · vidusposma pārskats · dati 2020–2025 · ${esc(D.site.version_label.toLowerCase().replace(' · ',', '))}.</p><p>Sagatavoja Rīgas valstspilsētas pašvaldības aģentūra “Rīgas enerģētikas aģentūra” (REA). Kontakti: <a href="mailto:${esc(D.site.contact_email)}">${esc(D.site.contact_email)}</a>.</p><p>Dati un teksti: <a href="${D.site.license_url}">${D.site.license}</a> · <a href="dati.html">Lejupielādēt datus</a> · <a href="par.html#pieklustamiba">Piekļūstamība</a></p></div><span class="logo" role="img" aria-label="Rīga">${LOGO}</span>`;
   tip=document.createElement('div');tip.id='tip';tip.setAttribute('role','tooltip');document.body.appendChild(tip);
 }
-function notice(){const t=(TXT.darba_versija||[]).join(' ');return `<div class="notice" role="note"><p><b>Darba versija.</b> ${esc(t.replace(/^Šī ir vidusposma pārskata darba versija\.\s*/,''))}</p><a class="btn" href="${mailto('vispārīgs papildinājums','Lapa: '+document.title)}">Sūtīt papildinājumu</a></div>`}
 function horizon(){
   return `<div class="horizon" id="horizon" role="img" aria-label="Plāna laika posms no 2019. līdz 2030. gadam; pārskata gads 2025"></div>`}
 function drawHorizon(){live($('#horizon'),()=>{
@@ -205,17 +203,17 @@ function targetRows(list,groups){
       <div class="cell"><span class="lab">Mērķis</span><span>${lvText(t.tval)}</span><span class="small">${esc(t.tyear)}</span></div>
       <div class="cell"><span class="lab">2025</span><span><b>${valTxt(t,t.v2025)}</b></span></div>
       ${progHtml(t)}<div class="stc">${pill(t.status)}</div></summary>
-      <div class="tdetail">${t.code?`<div><div class="chart" id="tc-${t.id}" style="height:220px"></div><div class="legend"><span><i class="ln" style="background:var(--line1)"></i>${esc(IND[t.code].name)}${t.table==='co2'?', % pret 2019':''}</span>${t.base!=null?'<span><i class="dash"></i>Trajektorija no bāzes līdz mērķim</span>':''}</div></div>`:'<div class="small">Rādītāja datu rindas nav.</div>'}
+      <div class="tdetail">${t.code?`<div><div class="chart" id="tc-${t.id}" style="height:220px"></div><div class="legend"><span><i class="ln" style="background:var(--line1)"></i>${esc(IND[t.code].name)}${t.table==='co2'?', % pret 2019':''}</span>${t.base!=null?'<span><i class="dash"></i>Trajektorija no bāzes līdz mērķim</span>':t.target!=null?'<span>◆ Mērķa vērtība</span>':''}</div></div>`:'<div class="small">Rādītāja datu rindas nav.</div>'}
       <div class="cm"><p>${lvText(t.comment)}</p>${t.code?`<p><a href="raditaji.html#${encodeURIComponent(t.code)}">Skatīt rādītāju ${t.code==='LV-RESE'?'(palīgdati)':esc(t.code)} →</a></p>`:''}${t.rsec!=='kop'?`<p><a href="${SECPAGE[t.rsec]}#pasakumi">Sektora pasākumi →</a></p>`:''}</div></div></details>`).join('')+'</div>'});
   if(!list.length)h+='<div class="empty">Nav mērķu ar šiem filtriem.</div>';return h}
 function drawTargetChart(t){const n=document.getElementById('tc-'+t.id);if(!n||n.dataset.live)return;n.dataset.live=1;const ind=IND[t.code];
-  const ser=[];const hasTraj=t.base!=null&&t.target!=null;const ty=+t.tyear||2030;const by=t.byc||2019;
+  const ser=[];const hasTraj=t.base!=null&&t.target!=null;const tOnly=!hasTraj&&t.target!=null;const ty=+t.tyear||2030;const by=t.byc||2019;
   if(hasTraj)ser.push({pts:[[by,t.base],[ty,t.target]],color:'var(--ink-2)',dash:'4 4',w:1.5,dots:false});
   let pts=YEARS.map((y,i)=>[y,ind.values[i]]);if(ind.breakBefore)pts=pts.filter(p=>p[0]>=ind.breakBefore);
   if(hasTraj){pts=pts.filter(p=>p[0]!==by);pts.unshift([by,t.base])}
   ser.push({pts,color:'var(--line1)',hollow:hasTraj?[by]:[],bridge:true});
   const u=t.table==='co2'?' %':(t.unit==='%'?' %':' '+unitLv(ind.unit));
-  live(n,()=>lineChart(n,{x0:hasTraj?by:2020,x1:hasTraj?Math.max(ty,2025):2025,aria:t.goal,series:ser,marks:hasTraj?[{x:ty,y:t.target,shape:'target'}]:[],hoverXs:YEARS.filter((y,i)=>ind.values[i]!=null),
+  live(n,()=>lineChart(n,{x0:hasTraj?by:2020,x1:hasTraj||tOnly?Math.max(ty,2025):2025,aria:t.goal,series:ser,extraY:tOnly?[t.target]:[],marks:hasTraj||tOnly?[{x:ty,y:t.target,shape:'target',label:tOnly?'Mērķis '+fmt(t.target,t.dec)+(t.unit==='%'?' %':''):null,anchor:'end',dx:-8}]:[],hoverXs:YEARS.filter((y,i)=>ind.values[i]!=null),
     tip:y=>{const i=YEARS.indexOf(y);let h=`<b>${y}</b><div class="r"><span>Vērtība</span><b>${fa(ind.values[i])}${esc(u)}</b></div>`;if(hasTraj&&y<=ty&&y>=by)h+=`<div class="r"><span>Trajektorija</span><span>${fa(t.base+(t.target-t.base)*(y-by)/(ty-by))}${esc(u)}</span></div>`;return h}}))}
 function bindTargets(node){node.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('trow')&&d.open){const t=T.find(x=>x.id==d.dataset.id);if(t&&t.code)drawTargetChart(t)}},true)}
 
@@ -235,11 +233,10 @@ function mrow(m){
   const projs=m.projects.length?`<ul class="plist">${m.projects.map(p=>isTodo(p.name)&&!p.url?`<li>${todoBox(m.id+' ES projekti',ctx+'\nES sadarbības projekti','Projekti vēl nav norādīti.')}</li>`:`<li>${p.url?link(p.url,p.name||shortUrl(p.url)):esc(p.name)}</li>`).join('')}</ul>`:'<p class="small">Nav norādīti.</p>';
   return `<details class="mrow" id="${esc(m.id)}" data-id="${esc(m.id)}"><summary><span class="mid">${esc(m.id)}</span><span class="mt"><span class="chev" aria-hidden="true">›</span>${esc(m.title)}</span><span class="mst">${mpill(m.status)}</span><span class="mco2">${m.co2!=null?(m.shared?'≈ ':'')+fmt(m.co2,m.co2<100?1:0)+' t CO₂/gadā':'<span class="muted">bez tiešas ietekmes</span>'}</span></summary>
   <div class="mdetail"><div><h4>Plānā paredzēts</h4>${prose(m.plan,m.id,ctx)}<h4 style="margin-top:18px">Situācija 2026. gadā</h4>${m.done.length?prose(m.done,m.id,ctx):todoBox(m.id,ctx)}</div>
-  <aside><div><h4>Statuss (darba versija)</h4><p>${mpill(m.status)}</p>${m.status_note?`<p class="small" style="margin-top:6px">${esc(m.status_note)}</p>`:''}</div>
+  <aside><div><h4>Statuss</h4><p>${mpill(m.status)}</p>${m.status_note?`<p class="small" style="margin-top:6px">${esc(m.status_note)}</p>`:''}</div>
   <div><h4>Plānotā ietekme 2030. gadā</h4>${imp.length?`<dl>${imp.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl>`:''}${m.shared?`<p class="small" style="margin-top:6px">Plānā norādīts kopīgs rādītājs pasākumiem ${esc(m.shared)}.</p>`:''}${direct?'':'<p class="small" style="margin-top:6px">Tiešs enerģijas ietaupījums vai CO₂ samazinājums nav plānots (atbalsta pasākums).</p>'}</div>
   <div><h4>Saistītie rādītāji</h4>${inds?`<div style="display:grid;gap:6px">${inds}</div>`:'<p class="small">Nav piesaistīti.</p>'}</div>
-  <div><h4>ES sadarbības projekti</h4>${projs}</div>
-  <div><a class="btn" href="${mailto(m.id+' '+m.title,ctx)}">Papildināt informāciju</a></div></aside></div></details>`}
+  <div><h4>ES sadarbības projekti</h4>${projs}</div></aside></div></details>`}
 function bindMeasures(node){node.addEventListener('toggle',e=>{const d=e.target;if(d.classList&&d.classList.contains('mrow')&&d.open&&history.replaceState)history.replaceState(null,'','#'+d.id)},true)}
 function openFromHash(){const id=decodeURIComponent(location.hash.slice(1));const d=id&&document.getElementById(id);if(d&&d.tagName==='DETAILS'){d.open=true;requestAnimationFrame(()=>d.scrollIntoView({block:'start'}))}}
 
@@ -260,7 +257,7 @@ pages.home=()=>{
     <div class="mini"><span class="lab">${ms.length} pasākumi</span>${mStatusBar(ms)}</div>
     <a class="more" href="${SECPAGE[k]}">Atvērt sadaļu →</a></div>`}).join('');
   const mc=countBy(M,m=>m.status);
-  $('#main').innerHTML=notice()+`
+  $('#main').innerHTML=`
   <section id="galvenais" aria-labelledby="h-kop"><h2 id="h-kop" class="sr">Galvenie rādītāji</h2><div class="grid-sum">${heroPanel()}${statusPanel()}</div>${sectorMatrix()}</section>
   <section id="kopsavilkums"><div class="sec-head"><h2>Kopsavilkums</h2></div>${prose(TXT.kopsavilkums,'kopsavilkums','Lapa: Sākums – galvenie secinājumi','two')}</section>
   <section id="sektori"><div class="sec-head"><h2>Sektori</h2><p class="lede">Pārskatā vērtēti četri SECAP2030 sektori. Katrā sadaļā – mērķi, rādītāji, pasākumi, izaicinājumi un nākamie soļi.</p></div><div class="grid-cards">${sec}</div></section>
@@ -268,8 +265,8 @@ pages.home=()=>{
   <section id="pasakumu-istenosana"><div class="sec-head"><h2>Pasākumu īstenošana</h2><p class="lede">SECAP2030 ietver ${M.length} pasākumus četros sektoros. ${esc((TXT.pasakumu_statusa_piezime||[]).join(' '))}</p></div>
     <div class="grid-2"><div class="panel"><div class="eyebrow">Visi pasākumi</div>${mStatusBar(M,30)}<ul class="stlist" style="margin-top:14px">${MORDER.filter(s=>mc[s]).map(s=>`<li><a href="pasakumi.html#statuss=${encodeURIComponent(s)}">${mpill(s)}<span class="cnt">${mc[s]}</span></a></li>`).join('')}</ul></div>
     <div class="panel"><div class="eyebrow">Pa sektoriem</div><div class="secmx">${SECS.map(k=>{const ms=M.filter(m=>m.sector===k);return `<a href="${SECPAGE[k]}#pasakumi"><span class="sn">${esc(SN[k])}</span><span class="sc">${ms.length}</span>${mStatusBar(ms,24).replace('class="mbar"','class="sb mbar"')}</a>`}).join('')}</div><p style="margin-top:16px"><a class="more" href="pasakumi.html">Visi pasākumi →</a></p></div></div></section>
-  <section id="iesaisties"><div class="grid-2"><div class="panel"><h3>Aicinām papildināt</h3><div class="prose" style="margin-top:10px">${(TXT.aicinajums||[]).map(p=>`<p>${esc(p)}</p>`).join('')}</div><div class="actions"><a class="btn solid" href="${mailto('vispārīgs papildinājums','Lapa: Sākums')}">Sūtīt papildinājumu</a></div></div>
-    <div class="panel"><h3>Pārskats un dati</h3><ul class="list" style="margin-top:10px"><li><a href="${esc(D.site.report_pdf)}">Vidusposma pārskats (PDF, darba versija)</a></li><li><a href="dati/Riga-SECAP-vidusposms-dati.xlsx">Visi dati vienā Excel datnē</a></li><li><a href="dati.html">Visas lejupielādes un licence</a></li><li><a href="en.html">Summary in English</a></li></ul></div></div></section>`;
+  <section id="par"><div class="grid-2"><div class="panel"><h3>Par pārskatu</h3><div class="prose" style="margin-top:10px"><p>Vidusposma pārskatu sagatavoja Rīgas enerģētikas aģentūra (REA). Pārskatu veido teksta pārskats, rādītāju un mērķu tabula un šī vietne.</p><p>Jautājumi un komentāri: <a href="mailto:${esc(D.site.contact_email)}">${esc(D.site.contact_email)}</a></p></div><p style="margin-top:12px"><a class="more" href="par.html">Par pārskatu un metodi →</a></p></div>
+    <div class="panel"><h3>Pārskats un dati</h3><ul class="list" style="margin-top:10px"><li><a href="${esc(D.site.report_pdf)}">Vidusposma pārskats (PDF)</a></li><li><a href="dati/Riga-SECAP-vidusposms-dati.xlsx">Visi dati vienā Excel datnē</a></li><li><a href="dati.html">Visas lejupielādes un licence</a></li><li><a href="en.html">Summary in English</a></li></ul></div></div></section>`;
   drawHorizon();drawHero();drawCo2();
 };
 
@@ -278,7 +275,7 @@ pages.sector=()=>{
   const inds=D.indicators.filter(i=>i.rsec===SEC&&!i.aux);
   const sub=[['merki','Mērķi'],['raditaji','Rādītāji'],['pasakumi','Pasākumi'],['izaicinajumi','Izaicinājumi'],['nakamie-soli','Nākamie soļi']];
   shell({eyebrow:'SECAP2030 vidusposma pārskats · sektors',title:esc(SN[SEC]),lede:(s.summary||[]).map(rich).join(' '),extra:`<nav class="subnav" aria-label="Sadaļas lapā">${sub.map(([a,b])=>`<a href="#${a}">${b}</a>`).join('')}</nav>`});
-  $('#main').innerHTML=notice()+
+  $('#main').innerHTML=
   (s.intro.length?`<section id="ievads"><div class="sec-head"><h2>Par sektoru</h2></div>${prose(s.intro,SEC,'Sektors: '+SN[SEC])}</section>`:'')+
   `<section id="merki"><div class="sec-head"><h2>Mērķu izpilde</h2><p class="lede">${ts.length} SECAP2030 mērķi. Atveriet rindu, lai redzētu rādītāja dinamiku un piezīmes.</p></div><div id="tlist">${targetRows(ts,[[SEC,SN[SEC]]])}</div>${s.targets_text.length?`<div style="margin-top:26px">${prose(s.targets_text,SEC+' mērķi','Sektors: '+SN[SEC]+' – mērķu komentārs')}</div>`:''}</section>
   <section id="raditaji"><div class="sec-head"><h2>Rādītāji</h2><p class="lede">${inds.length} monitoringa rādītāji, 2020–2025. Izvēlieties rādītāju, lai redzētu grafiku, aprakstu un datus.</p></div><div class="igrid open">${inds.map(i=>icardHtml(i,true)).join('')}</div>${s.ind_text.length?`<div style="margin-top:26px">${prose(s.ind_text,SEC+' rādītāji','Sektors: '+SN[SEC]+' – rādītāju komentārs')}</div>`:''}</section>
@@ -297,7 +294,7 @@ pages.sector=()=>{
 pages.targets=()=>{
   shell({title:'Mērķu izpilde',lede:'SECAP 4.1. un 4.2. tabulas 22 mērķi: kopējo emisiju mērķis un 21 sektoru mērķis. Josla rāda progresu no bāzes vērtības līdz mērķim; vertikālā atzīme – laika progress 2025. gadā.'});
   let st=null,rs=null;
-  $('#main').innerHTML=notice()+`<section id="merki"><div class="grid-sum">${statusPanel()}<div class="panel"><div class="eyebrow">Kā vērtēts</div><div class="prose small" style="margin-top:10px">${prose(TXT.metode,'metode','Lapa: Mērķi – metode')}</div><p style="margin-top:12px"><a class="more" href="par.html#metode">Vairāk par metodi →</a></p></div></div>
+  $('#main').innerHTML=`<section id="merki"><div class="grid-sum">${statusPanel()}<div class="panel"><div class="eyebrow">Kā vērtēts</div><div class="prose small" style="margin-top:10px">${prose((TXT.metode||[]).slice(0,1),'metode','Lapa: Mērķi – metode')}</div><p style="margin-top:12px"><a class="more" href="par.html#metode">Vairāk par metodi →</a></p></div></div>
   <div class="toolbar" style="margin-top:28px"><div class="chips" id="rsF" role="group" aria-label="Filtrēt pēc sektora"></div><div class="chips" id="stF" role="group" aria-label="Filtrēt pēc statusa"></div></div><div id="tlist"></div></section>`;
   function render(){
     $('#rsF').innerHTML=[[null,'Visi sektori'],...RS].map(([k,l])=>`<button type="button" class="chip" aria-pressed="${k===rs}" data-rs="${k||''}">${l}<span class="c">${k?T.filter(t=>t.rsec===k).length:T.length}</span></button>`).join('');
@@ -314,7 +311,7 @@ pages.targets=()=>{
 pages.measures=()=>{
   shell({title:'Pasākumi',lede:`SECAP2030 ietver ${M.length} pasākumus. Katram pasākumam – plāns, situācija 2026. gadā, plānotā ietekme, saistītie rādītāji un ES sadarbības projekti.`});
   const mc=countBy(M,m=>m.status);let st=null,sf=null,q='';
-  $('#main').innerHTML=notice()+`<section id="statuss"><div class="grid-2"><div class="panel"><div class="eyebrow">Pasākumu statuss (darba versija)</div>${mStatusBar(M,30)}
+  $('#main').innerHTML=`<section id="statuss"><div class="grid-2"><div class="panel"><div class="eyebrow">Pasākumu statuss</div>${mStatusBar(M,30)}
     <ul class="stlist" id="mst" style="margin-top:12px">${MORDER.filter(s=>mc[s]).map(s=>`<li><button type="button" data-st="${esc(s)}">${mpill(s)}<span class="cnt">${mc[s]}</span></button></li>`).join('')}</ul>
     <p class="small" style="margin-top:12px">${esc((TXT.pasakumu_statusa_piezime||[]).join(' '))}</p></div>
     <div class="panel"><div class="eyebrow">Statusu skaidrojums</div><dl class="kvlist" style="margin-top:12px">${D.statuses.map(s=>`<dt>${mpill(s.name)}</dt><dd style="font-weight:400">${esc(s.desc)}</dd>`).join('')}</dl></div></div></section>
@@ -343,7 +340,7 @@ pages.measures=()=>{
 pages.indicators=()=>{
   shell({title:'Rādītāji 2020–2025',lede:`${D.indicators.filter(i=>!i.aux).length} monitoringa rādītāji ar vērtībām pa gadiem, aprakstu un saistītajiem mērķiem un pasākumiem. Katra rādītāja datus var lejupielādēt.`});
   const SECT=[...new Set(D.indicators.map(i=>i.sector))];let secF=null,q='',sel='5001';
-  $('#main').innerHTML=notice()+`<section id="raditaji"><div class="toolbar"><div class="row"><div class="chips" id="secF" role="group" aria-label="Filtrēt pēc sektora"></div><input class="search" id="q" type="search" placeholder="Meklēt rādītāju vai kodu" aria-label="Meklēt rādītāju"></div></div>
+  $('#main').innerHTML=`<section id="raditaji"><div class="toolbar"><div class="row"><div class="chips" id="secF" role="group" aria-label="Filtrēt pēc sektora"></div><input class="search" id="q" type="search" placeholder="Meklēt rādītāju vai kodu" aria-label="Meklēt rādītāju"></div></div>
   <div class="xp"><div class="igrid" id="indGrid"></div><div class="panel idetail" id="indDetail" aria-live="polite"></div></div>
   <p class="small" style="margin-top:20px">Visi rādītāji vienā datnē: <a href="dati/riga-secap-raditaji-2020-2025.csv">CSV</a> · <a href="dati/Riga-SECAP-vidusposms-dati.xlsx">Excel</a>.</p></section>`;
   const list=()=>D.indicators.filter(i=>(!secF||i.sector===secF)&&(!q||(i.name+' '+i.code).toLowerCase().includes(q)));
@@ -359,7 +356,7 @@ pages.indicators=()=>{
     ${fns.length?`<p class="fn">* ${fns.join('; ')}</p>`:''}
     ${rel.length?`<div class="rel"><span class="eyebrow">Saistītie SECAP mērķi</span>${rel.map(t=>`<a href="merki.html#t-${t.id}">${pill(t.status)} ${lvText(t.goal)}</a>`).join('')}</div>`:''}
     ${rm.length?`<div class="rel"><span class="eyebrow">Saistītie pasākumi</span>${rm.map(m=>`<a href="pasakumi.html#${m.id}">${mpill(m.status)} <b>${m.id}</b> ${esc(m.title)}</a>`).join('')}</div>`:''}
-    <div class="actions"><button type="button" class="btn" id="dlInd">Lejupielādēt CSV</button><a class="btn" href="${mailto(i.code+' '+i.name,'Rādītājs: '+i.code+' – '+i.name)}">Papildināt</a></div>`;
+    <div class="actions"><button type="button" class="btn" id="dlInd">Lejupielādēt CSV</button></div>`;
     $('#dlInd').addEventListener('click',()=>{const b=new Blob([csv(i)],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`riga-secap-raditajs-${i.code}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)});
     const c=$('#indChart');if(c)live(c,()=>{if(!document.body.contains(c))return;lineChart(c,{x0:2020,x1:2025,aria:i.name,series:[{pts:withBreak(i),color:'var(--line1)'}],hoverXs:YEARS.filter((y,k)=>i.values[k]!=null),tip:y=>{const k=YEARS.indexOf(y);return `<b>${y}</b><div class="r"><span>${esc(unitLv(i.unit))}</span><b>${fi(i,i.values[k])}</b></div>`+(i.notes[k]?`<div>${esc(i.notes[k])}</div>`:'')}})})}
   function select(code,scroll){if(!IND[code])return;sel=code;if(secF&&IND[code].sector!==secF)secF=null;renderF();renderGrid();renderDetail();if(scroll&&innerWidth<900)$('#indDetail').scrollIntoView({behavior:'smooth',block:'start'})}
@@ -376,30 +373,30 @@ pages.data=()=>{
   shell({title:'Dati un lejupielādes',lede:'Pārskata dati ir atvērti: tos var brīvi izmantot, norādot avotu.'});
   const F=D.meta.files||{};const sz=p=>F[p]?(F[p]>1048576?fmt(F[p]/1048576,1)+' MB':fmt(Math.max(1,Math.round(F[p]/1024)),0)+' KB'):'';
   const item=(p,fmtx,title,desc)=>`<div class="dl-item"><div><span class="fmt">${fmtx}${sz(p)?' · '+sz(p):''}</span><h3 style="margin:2px 0 4px"><a href="${esc(p)}" download>${title}</a></h3><p class="small">${desc}</p></div><a class="btn" href="${esc(p)}" download aria-label="Lejupielādēt: ${esc(title)}">Lejupielādēt</a></div>`;
-  $('#main').innerHTML=notice()+`<section id="lejupielades"><div class="sec-head"><h2>Lejupielādes</h2></div><div class="panel dl-list">
-    ${item(D.site.report_pdf,'PDF','Vidusposma pārskats (darba versija)','Pilns pārskata teksts ar tabulām. Darba versija – saturs vēl tiek papildināts.')}
+  $('#main').innerHTML=`<section id="lejupielades"><div class="sec-head"><h2>Lejupielādes</h2></div><div class="panel dl-list">
+    ${item(D.site.report_pdf,'PDF','Vidusposma pārskats','Pilns pārskata teksts ar tabulām (gala versija, 2026. gada oktobris).')}
     ${item('dati/Riga-SECAP-vidusposms-dati.xlsx','XLSX','Visi dati vienā Excel datnē','Lapas: Rādītāji (2020–2025), Mērķi (2025. gada novērtējums), Pasākumi (plāns, statuss, plānotā ietekme).')}
     ${item('dati/riga-secap-raditaji-2020-2025.csv','CSV',`Rādītāji 2020–2025 (${D.indicators.length})`,'Kods, nosaukums, sektors, vienība, vērtības pa gadiem, piezīmes, apraksts un avots.')}
     ${item('dati/riga-secap-merki-2025.csv','CSV',`Mērķu izpilde 2025 (${T.length})`,'Mērķa un bāzes vērtība, 2025. gada vērtība, progress, statuss un komentārs.')}
-    ${item('dati/riga-secap-pasakumi.csv','CSV',`Pasākumi (${M.length})`,'Statuss (darba versija), plānotā ietekme, saistītie rādītāji, ES projekti, plāns un paveiktais.')}
+    ${item('dati/riga-secap-pasakumi.csv','CSV',`Pasākumi (${M.length})`,'Statuss, plānotā ietekme, saistītie rādītāji, ES projekti, plāns un paveiktais.')}
   </div></section>
-  <section id="formats"><div class="grid-2"><div class="panel"><h3>Par datu formātu</h3><ul class="list small" style="margin-top:10px"><li>CSV datnes: UTF-8 kodējums, komats kā atdalītājs, punkts kā decimālzīme. Ja Excel neattēlo kolonnas pareizi, izmantojiet XLSX datni.</li><li>Procentu rādītāji norādīti procentos (piem. 46,85 = 46,85 %). Rādītāji 5002–5008 – izmaiņa procentos pret bāzes gadu.</li><li>Tukša šūna – dati nav pieejami.</li><li>Pasākumu statuss ir darba versija. Plānotā ietekme – no SECAP2030 pasākumu tabulas; vairākiem pasākumiem plānā norādīts kopīgs rādītājs (kolonna “kopīgs plāna rādītājs ar”).</li></ul></div>
-  <div class="panel"><h3>Licence un atsauce</h3><p style="margin-top:10px">Dati un teksti pieejami ar licenci <a href="${D.site.license_url}">${D.site.license}</a> – tos drīkst izmantot, pārveidot un izplatīt, norādot avotu.</p><p class="small" style="margin-top:10px"><b>Ieteicamā atsauce:</b> Rīgas enerģētikas aģentūra (2026). Rīgas SECAP 2022–2030 vidusposma pārskats: dati 2020–2025. Darba versija, ${esc(D.meta.built)}.</p></div></div></section>
+  <section id="formats"><div class="grid-2"><div class="panel"><h3>Par datu formātu</h3><ul class="list small" style="margin-top:10px"><li>CSV datnes: UTF-8 kodējums, komats kā atdalītājs, punkts kā decimālzīme. Ja Excel neattēlo kolonnas pareizi, izmantojiet XLSX datni.</li><li>Procentu rādītāji norādīti procentos (piem. 45,5 = 45,5 %). Rādītāji 5002–5008 – izmaiņa procentos pret bāzes gadu.</li><li>Tukša šūna – dati nav pieejami.</li><li>Pasākumu statuss – REA vērtējums pēc pārskata teksta. Plānotā ietekme – no SECAP2030 pasākumu tabulas; vairākiem pasākumiem plānā norādīts kopīgs rādītājs (kolonna “kopīgs plāna rādītājs ar”).</li></ul></div>
+  <div class="panel"><h3>Licence un atsauce</h3><p style="margin-top:10px">Dati un teksti pieejami ar licenci <a href="${D.site.license_url}">${D.site.license}</a> – tos drīkst izmantot, pārveidot un izplatīt, norādot avotu.</p><p class="small" style="margin-top:10px"><b>Ieteicamā atsauce:</b> Rīgas enerģētikas aģentūra (2026). Rīgas SECAP 2022–2030 vidusposma pārskats: dati 2020–2025. Gala versija, ${esc(D.meta.data_version)}.</p></div></div></section>
   <section id="avoti"><div class="grid-2"><div class="panel"><h3>Avota datnes</h3><p class="small" style="margin-top:8px">No šīm datnēm tiek veidota visa vietne (sk. README repozitorijā).</p><ul class="list" style="margin-top:10px"><li><a href="avoti/Riga-SECAP-2025-Raditaji.xlsx" download>Rādītāju datne</a> ${sz('avoti/Riga-SECAP-2025-Raditaji.xlsx')?'· '+sz('avoti/Riga-SECAP-2025-Raditaji.xlsx'):''} – mērķi, rādītāju vērtības, apraksti</li><li><a href="avoti/Riga-SECAP-saturs.xlsx" download>Satura datne</a> ${sz('avoti/Riga-SECAP-saturs.xlsx')?'· '+sz('avoti/Riga-SECAP-saturs.xlsx'):''} – sektoru teksti, pasākumi, izaicinājumi, nākamie soļi</li></ul></div>
   <div class="panel"><h3>Versijas</h3><dl class="kvlist" style="margin-top:10px">${(D.site.changelog||[]).map(([d,t])=>`<dt>${esc(d)}</dt><dd style="font-weight:400">${esc(t)}</dd>`).join('')}</dl></div></div></section>`;
 };
 
 pages.about=()=>{
   shell({title:'Par pārskatu',lede:'Kāpēc un kā sagatavots SECAP2030 vidusposma pārskats, kā vērtēta mērķu izpilde un pasākumu īstenošana.'});
-  const crit=[['Sasniegts','progress ≥ 100 %'],['Atbilst trajektorijai',`progress ≥ laika progress − pielaide (${fmt((TIME_PROG-TOL)*100,1)} % vai ${fmt(40,1)} %)`],['Atpaliek no trajektorijas','progress > 0, bet zem trajektorijas sliekšņa'],['Nav progresa','progress ≤ 0'],['Nav datu','mērķim nav rādītāja'],['Netiek vērtēts','gadu vērtības nav tieši salīdzināmas (sk. piezīmi)']];
-  $('#main').innerHTML=notice()+`<section id="ievads"><div class="sec-head"><h2>Ievads</h2></div>${prose(TXT.ievads,'ievads','Lapa: Par pārskatu – ievads')}</section>
+  const crit=[['Sasniegts','progress ≥ 100 %'],['Atbilst trajektorijai',`progress ≥ laika progress − pielaide (${fmt((TIME_PROG-TOL)*100,1)} % vai ${fmt(40,1)} %)`],['Atpaliek no trajektorijas','progress zem trajektorijas sliekšņa (arī tad, ja rādītājs nav uzlabojies)'],['Nav datu','nav salīdzināmu datu izpildes novērtēšanai']];
+  $('#main').innerHTML=`<section id="ievads"><div class="sec-head"><h2>Ievads</h2></div>${prose(TXT.ievads,'ievads','Lapa: Par pārskatu – ievads')}</section>
   <section id="metode"><div class="sec-head"><h2>Vērtēšanas metode</h2></div>${prose(TXT.metode,'metode','Lapa: Par pārskatu – metode')}
     <div class="grid-2" style="margin-top:22px"><div class="panel method"><h3 style="margin-bottom:12px">Mērķu novērtējums</h3><dl>${[['Bāzes gads','2019 (atsevišķos gadījumos 2020)'],['Pārskata gads','2025'],['Mērķa gads','2030'],['Laika progress (bāze 2019)',fmt(TIME_PROG*100,1)+' %'],['Laika progress (bāze 2020)',fmt(50,1)+' %'],['Pielaide trajektorijai','10 procentpunkti']].map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl><p class="small" style="margin-top:12px">Progress = (2025. g. vērtība − bāze) / (mērķis − bāze).</p><ul class="stlist" style="margin-top:12px;gap:8px">${crit.map(([s,d])=>`<li style="display:grid;gap:4px">${pill(s)}<span class="small">${d}</span></li>`).join('')}</ul></div>
     <div class="panel"><h3 style="margin-bottom:12px">Pasākumu statuss</h3><p class="small">${esc((TXT.pasakumu_statusa_piezime||[]).join(' '))}</p><dl class="kvlist" style="margin-top:12px">${D.statuses.map(s=>`<dt>${mpill(s.name)}</dt><dd style="font-weight:400">${esc(s.desc)}</dd>`).join('')}</dl></div></div></section>
   <section id="secinajumi"><div class="sec-head"><h2>Secinājumi</h2></div>${prose(TXT.secinajumi,'secinājumi','Lapa: Par pārskatu – secinājumi')}</section>
-  <section id="iesaisties"><div class="sec-head"><h2>Kā papildināt</h2></div><div class="prose">${(TXT.aicinajums||[]).map(p=>`<p>${esc(p)}</p>`).join('')}</div><div class="actions"><a class="btn solid" href="${mailto('vispārīgs papildinājums','Lapa: Par pārskatu')}">Sūtīt papildinājumu</a></div></section>
+  <section id="kontakti"><div class="sec-head"><h2>Kontakti</h2></div><div class="prose"><p>Jautājumi un komentāri par pārskatu: <a href="mailto:${esc(D.site.contact_email)}">${esc(D.site.contact_email)}</a>.</p></div></section>
   <section id="saisinajumi"><div class="sec-head"><h2>Saīsinājumi</h2></div><div class="abbr">${D.abbr.map(([a,b])=>`<div><b>${esc(a)}</b> – ${esc(b)}</div>`).join('')}</div></section>
-  <section id="pieklustamiba"><div class="sec-head"><h2>Piekļūstamība</h2></div><div class="prose"><p>Vietne veidota, ievērojot WCAG 2.1 AA vadlīnijas: teksta un fona kontrasts, navigācija ar tastatūru, virsrakstu struktūra, grafiku teksta alternatīvas un datu tabulas. Vietne ir darba versijā; pilns piekļūstamības izvērtējums vēl nav veikts.</p><p>Ja konstatējat piekļūstamības problēmu, lūdzu, <a href="${mailto('piekļūstamība','Lapa: '+location.pathname)}">ziņojiet mums</a>.</p></div></section>
+  <section id="pieklustamiba"><div class="sec-head"><h2>Piekļūstamība</h2></div><div class="prose"><p>Vietne veidota, ievērojot WCAG 2.1 AA vadlīnijas: teksta un fona kontrasts, navigācija ar tastatūru, virsrakstu struktūra, grafiku teksta alternatīvas un datu tabulas. Pilns piekļūstamības izvērtējums nav veikts.</p><p>Ja konstatējat piekļūstamības problēmu, lūdzu, <a href="mailto:${esc(D.site.contact_email)}?subject=${encodeURIComponent('SECAP vidusposms: piekļūstamība')}">ziņojiet mums</a>.</p></div></section>
   <section id="licence"><div class="sec-head"><h2>Licence un tehniskā informācija</h2></div><div class="prose"><p>Dati un teksti: <a href="${D.site.license_url}">${D.site.license}</a>. Fonts Outfit: SIL Open Font License 1.1. Rīgas logotips izmantots saskaņā ar Rīgas zīmola vadlīnijām.</p><p>Vietne neizmanto sīkdatnes un ārējus pakalpojumus (fonti un dati glabājas vietnē).</p></div></section>`;
 };
 
@@ -407,11 +404,11 @@ pages['en-summary']=()=>{
   document.documentElement.lang='en';
   shell({title:'Mid-term review 2026 – summary',lede:'Implementation of the Riga Sustainable Energy and Climate Action Plan 2022–2030 (SECAP2030): targets, indicators and measures, based on data for 2020–2025.'});
   const en=TXT.en_summary||[];
-  $('#main').innerHTML=`<div class="notice" role="note" lang="en"><p><b>Draft.</b> The mid-term review is still being completed together with municipal departments. The detailed pages of this site are in Latvian.</p></div>
+  $('#main').innerHTML=`<div class="notice" role="note" lang="en"><p>The detailed pages of this site and the full review are in Latvian.</p></div>
   <section id="summary"><div class="grid-sum"><div class="panel"><div class="eyebrow">Riga's total CO₂ emissions, 2025</div><div class="hero-row"><div class="hero-num">${Math.round(tot[5]).toLocaleString('en-GB')}<small>kt CO₂</small></div>
     <div class="kv"><b>${sgn(IND['5003'].values[5],1).replace(',','.')} %</b><span>vs 2019 · target −30 %</span></div><div class="kv"><b>${sgn(IND['5002'].values[5],1).replace(',','.')} %</b><span>vs 1990 · target −70 %</span></div></div>
-    <ul class="list small" style="margin-top:14px">${[['Sasniegts','achieved'],['Atbilst trajektorijai','on track'],['Atpaliek no trajektorijas','behind the trajectory'],['Nav progresa','no progress'],['Nav datu','no data'],['Netiek vērtēts','not assessed']].filter(([k])=>tcounts[k]).map(([k,v])=>`<li><b>${tcounts[k]}</b> ${v}</li>`).join('')}</ul><p class="small" style="margin-top:8px">${T.length} targets: total emissions and ${T.length-1} sector targets.</p></div>
-    <div class="panel"><div class="eyebrow">Downloads</div><ul class="list" style="margin-top:12px"><li><a href="${esc(D.site.report_pdf)}">Full review (PDF, Latvian, draft)</a></li><li><a href="dati/Riga-SECAP-vidusposms-dati.xlsx">All data (Excel)</a></li><li><a href="dati.html">Open data (CSV) and licence</a></li></ul><p class="small" style="margin-top:12px">Data and texts: <a href="${D.site.license_url.replace('deed.lv','')}">${D.site.license}</a>.</p></div></div></section>
+    <ul class="list small" style="margin-top:14px">${[['Sasniegts','achieved'],['Atbilst trajektorijai','on track'],['Atpaliek no trajektorijas','behind the trajectory'],['Nav datu','not assessed (no comparable data)']].filter(([k])=>tcounts[k]).map(([k,v])=>`<li><b>${tcounts[k]}</b> ${v}</li>`).join('')}</ul><p class="small" style="margin-top:8px">${T.length} targets: total emissions and ${T.length-1} sector targets.</p></div>
+    <div class="panel"><div class="eyebrow">Downloads</div><ul class="list" style="margin-top:12px"><li><a href="${esc(D.site.report_pdf)}">Full review (PDF, Latvian)</a></li><li><a href="dati/Riga-SECAP-vidusposms-dati.xlsx">All data (Excel)</a></li><li><a href="dati.html">Open data (CSV) and licence</a></li></ul><p class="small" style="margin-top:12px">Data and texts: <a href="${D.site.license_url.replace('deed.lv','')}">${D.site.license}</a>.</p></div></div></section>
   <section id="text" lang="en"><div class="sec-head"><h2>Summary</h2></div><div class="prose">${en.map(p=>{const m=p.match(/^(Municipal infrastructure|Multi-apartment buildings|Energy production|Transport)\.\s*/);return m?`<p><b>${m[1]}.</b> ${esc(p.slice(m[0].length))}</p>`:`<p>${esc(p)}</p>`}).join('')}</div></section>`;
 };
 
