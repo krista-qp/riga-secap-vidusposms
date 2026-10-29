@@ -18,7 +18,6 @@
   --s-pas:#254CD4; --s-dz:#8F993E; --s-en:#0D382C; --s-tr:#565947; --s-kop:#000B40;
   --bar-done:#0D382C; --bar-on:#78E9B8; --bar-lag:#FF4B33; --bar-no:#43010B; --bar-nd:#B8B6A4; --bar-nv:#565947;
   --m-done:#0D382C; --m-on:#78E9B8; --m-prep:#AAD0FF; --m-part:#FF4B33; --m-no:#43010B; --m-nd:#B8B6A4;
-  --todo-bg:#fff4d6; --todo-ink:#5a4300; --todo-line:#e9c45c;
   --f-display:"Outfit","Gilroy",Arial,system-ui,sans-serif;
   --f-body:"Outfit","Gilroy",Arial,system-ui,sans-serif;
   --pad:clamp(16px,4vw,48px);
@@ -30,7 +29,6 @@
   --s-pas:#AAD0FF; --s-dz:#8F993E; --s-en:#78E9B8; --s-tr:#BEAFEC; --s-kop:#ffffff;
   --bar-done:#78E9B8; --bar-on:#78E9B8; --bar-lag:#FF4B33; --bar-no:#BEAFEC; --bar-nd:#B8B6A4; --bar-nv:#565947;
   --m-done:#78E9B8; --m-no:#BEAFEC;
-  --todo-bg:#3a3110; --todo-ink:#ffe8a3; --todo-line:#8a7425;
   color-scheme:dark}}
 
 *{box-sizing:border-box}
@@ -62,7 +60,7 @@ a{color:var(--accent);text-underline-offset:2px}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:20px;flex-wrap:wrap}
 .logo{display:block;width:132px;height:auto;color:var(--hdr-2)}
 .logo svg{display:block;width:100%;height:auto}
-.draft{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:#000B40;background:#AAD0FF;border-radius:999px;padding:4px 12px}
+.ver{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:600;color:#000B40;background:#AAD0FF;border-radius:999px;padding:4px 12px}
 header.top{padding-block:26px 34px;display:grid;gap:14px}
 .horizon{margin-top:8px;max-width:760px}
 .horizon svg{display:block;width:100%;height:auto;overflow:visible}
@@ -244,8 +242,7 @@ details.mrow>summary:hover{background:color-mix(in srgb,var(--surface-2) 55%,tra
   .mrow .mco2{grid-column:2;text-align:left}
   .mdetail{grid-template-columns:1fr;padding-left:4px}
 }
-.todo{background:var(--todo-bg);color:var(--todo-ink);border-left:4px solid var(--todo-line);padding:8px 12px;border-radius:2px;font-size:14.5px}
-.todo a{color:inherit;font-weight:600}
+.na{color:var(--muted);font-style:italic}
 .hbars{display:grid;gap:6px}
 .hbar{display:grid;grid-template-columns:minmax(120px,300px) minmax(0,1fr) 90px;gap:12px;align-items:center;font-size:14px;text-decoration:none;color:var(--ink);padding:2px 4px;border-radius:4px}
 a.hbar:hover{background:var(--surface-2)}

@@ -27,7 +27,7 @@ YEARS = [2020, 2021, 2022, 2023, 2024, 2025]
 TARGETS = {
   7:  dict(table="energy", rsec="pas", num=1,  code="1001",    unit="objekti",        dec=0),
   8:  dict(table="energy", rsec="pas", num=2,  code="1002",    unit="MWh",            dec=0),
-  9:  dict(table="energy", rsec="pas", num=3,  code="3002",    unit="%",              dec=2),
+  9:  dict(table="energy", rsec="pas", num=3,  code="3002",    unit="%",              dec=1),
   10: dict(table="energy", rsec="pas", num=4,  code="LV-RESE", unit="%",              dec=1),
   11: dict(table="energy", rsec="pas", num=5,  code="1012",    unit="MWh/gaismeklis", dec=3),
   12: dict(table="energy", rsec="pas", num=6,  code=None,      unit="",               dec=0),
@@ -36,13 +36,13 @@ TARGETS = {
   16: dict(table="energy", rsec="dz",  num=10, code="2004",    unit="ēkas",           dec=0),
   17: dict(table="energy", rsec="dz",  num=11, code="2001",    unit="MWh",            dec=0,
           div=1000, dunit="GWh", bval="2456 GWh (2123 GWh)"),
-  19: dict(table="energy", rsec="en",  num=12, code="3002",    unit="%",              dec=2),
-  20: dict(table="energy", rsec="en",  num=13, code=None,      unit="%",              dec=2),
-  22: dict(table="energy", rsec="en",  num=14, code="3006",    unit="%",              dec=1),
-  23: dict(table="energy", rsec="en",  num=15, code="3007",    unit="%",              dec=1),
-  24: dict(table="energy", rsec="en",  num=16, code="3005",    unit="GWh",            dec=0,
+  19: dict(table="energy", rsec="en",  num=12, code="3002",    unit="%",              dec=1),
+  20: dict(table="energy", rsec="en",  num=13, code="3003",    unit="%",              dec=2),
+  22: dict(table="energy", rsec="en",  num=14, code="3007",    unit="%",              dec=1),
+  23: dict(table="energy", rsec="en",  num=15, code="3008",    unit="%",              dec=1),
+  24: dict(table="energy", rsec="en",  num=16, code="3006",    unit="GWh",            dec=0,
           bval="3461 GWh (362 429 tūkst. m3)"),
-  26: dict(table="energy", rsec="en",  num=17, code="3009",    unit="%",              dec=1),
+  26: dict(table="energy", rsec="en",  num=17, code="3010",    unit="%",              dec=1),
   28: dict(table="energy", rsec="tr",  num=19, code="4007",    unit="%",              dec=1),
   29: dict(table="energy", rsec="tr",  num=20, code=None,      unit="",               dec=0),
   34: dict(table="co2",    rsec="kop", num=0,  code="5003",    unit="%",              dec=1),
@@ -53,6 +53,7 @@ TARGETS = {
 # Rādītāju papildu iestatījumi (decimāldaļas, piezīmes, datu rindas pārrāvums)
 IND_EXTRA = {
   "3002": dict(dec=2),
+  "3003": dict(dec=2),
   "4005": dict(dec=1),
   "2004": dict(breakBefore=2025,
                notes={2025: "Ekonomikas ministrijas dati; nav salīdzināms ar 2020–2024 vērtībām (cita uzskaite)"}),
@@ -63,13 +64,14 @@ SECTOR_NAMES = {"pas": "Pašvaldības infrastruktūra", "dz": "Daudzdzīvokļu �
                 "en": "Enerģijas ražošana", "tr": "Transports", "kop": "Rīgas kopējās emisijas"}
 SITE = dict(
   title="Rīgas SECAP vidusposma pārskats 2026",
-  version_label="Darba versija",
-  contact_email="",   # e-pasta adrese papildinājumiem; tukša – vēstule atveras bez adresāta
+  version_label="Gala versija · 2026. gada oktobris",
+  contact_email="krista.petersone@riga.lv",   # kontaktu e-pasts (kājene, lapa “Par pārskatu”)
   repo_url="",        # GitHub repozitorija adrese (neobligāti)
-  report_pdf="dati/Riga-SECAP-vidusposma-parskats-2026-darba-versija.pdf",
+  report_pdf="dati/Riga-SECAP-vidusposma-parskats-2026.pdf",
   license="CC BY 4.0",
   license_url="https://creativecommons.org/licenses/by/4.0/deed.lv",
-  changelog=[["2026-10-21", "Pirmā darba versija kolēģu pārskatīšanai un papildināšanai."]],
+  changelog=[["2026-10-21", "Pirmā darba versija kolēģu pārskatīšanai un papildināšanai."],
+             ["2026-10-29", "Gala versija: iestrādāti kolēģu komentāri, pievienots mērķis par siltuma zudumiem apkures sezonā (rādītājs 3003), precizēti mērķu statusi, pasākumu apraksti un rādītāju metodika."]],
 )
 
 # ---------------------------------------------------------------- palīgfunkcijas
@@ -246,7 +248,7 @@ def downloads(data, outdir):
                 None if t["progress"] is None else round(t["progress"], 4), round(t["tp"], 4),
                 t["status"], t["code"] or "", t["comment"]] for t in data["targets"]]
     write_csv(outdir / "riga-secap-merki-2025.csv", tg_h, tg_rows)
-    ms_h = ["kods", "sektors", "pasākums", "statuss (darba versija)", "statusa pamatojums",
+    ms_h = ["kods", "sektors", "pasākums", "statuss", "statusa pamatojums",
             "plānotais ietaupījums, MWh/gadā", "plānotā AER, MWh/gadā", "plānotais CO2 samazinājums, t/gadā",
             "indikatīvās investīcijas, tūkst. EUR", "ieviešanas termiņš", "kopīgs plāna rādītājs ar",
             "saistītie rādītāji", "ES sadarbības projekti", "plāns", "paveiktais"]
@@ -260,13 +262,13 @@ def downloads(data, outdir):
     wb.remove(wb.active)
     info = wb.create_sheet("Par datiem")
     for line in [
-        "Rīgas SECAP 2022–2030 vidusposma pārskats – atvērtie dati (darba versija)",
+        "Rīgas SECAP 2022–2030 vidusposma pārskats – atvērtie dati",
         f"Sagatavots: {data['meta']['built']}",
         f"Licence: {SITE['license']} ({SITE['license_url']})",
         "Avots: Rīgas valstspilsētas pašvaldības aģentūra “Rīgas enerģētikas aģentūra” (REA).",
         "Lapas: Rādītāji (2020–2025), Mērķi (2025. gada novērtējums), Pasākumi (SECAP2030 pasākumi un statuss).",
-        "Procentu rādītāji norādīti procentos (piem. 46,85 = 46,85 %).",
-        "Pasākumu statuss ir darba versija. Plānotā ietekme – no SECAP2030 pasākumu tabulas.",
+        "Procentu rādītāji norādīti procentos (piem. 45,5 = 45,5 %).",
+        "Pasākumu statuss – 2025. gada novērtējums. Plānotā ietekme – no SECAP2030 pasākumu tabulas.",
     ]:
         info.append([line])
     info.column_dimensions["A"].width = 120
@@ -299,7 +301,7 @@ def main():
     data.update(read_content(wbc))
     data["site"] = SITE
     data["sector_names"] = SECTOR_NAMES
-    data["meta"] = dict(built=datetime.date.today().isoformat(), data_version="2026-10-21")
+    data["meta"] = dict(built=datetime.date.today().isoformat(), data_version="2026-10-29")
     # pārbaudes
     codes = {i["code"] for i in data["indicators"]}
     for m in data["measures"]:

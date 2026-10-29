@@ -2,7 +2,7 @@
 
 Statiska vietne GitHub Pages publicēšanai. Rāda SECAP2030 vidusposma pārskatu: CO₂ emisijas, 22 mērķu izpildi, 65 rādītājus (2020–2025), 47 pasākumus, sektoru izaicinājumus un nākamos soļus, kā arī atvērto datu lejupielādes.
 
-**Statuss:** darba versija kolēģu pārskatīšanai un papildināšanai (2026. gada oktobris). Vietnei ir `noindex` atzīme – meklētājprogrammas to neindeksē.
+**Statuss:** gala versija (2026. gada oktobris). Saturs atbilst gala pārskatam un rādītāju tabulai.
 
 ## Struktūra
 
@@ -38,11 +38,9 @@ Vēlāk repozitoriju var nodot REA kontam (**Settings → Transfer ownership**) 
 2. Palaidiet: `pip install openpyxl` un `python3 build/build.py` (no repozitorija saknes).
 3. Augšupielādējiet mainītās datnes (`avoti/`, `assets/data.js`, `dati/`).
 
-Ja mainās pārskata PDF, aizstājiet `dati/Riga-SECAP-vidusposma-parskats-2026-darba-versija.pdf` un palaidiet skriptu vēlreiz.
+Ja mainās pārskata PDF, aizstājiet `dati/Riga-SECAP-vidusposma-parskats-2026.pdf` (tas pats nosaukums) un palaidiet skriptu vēlreiz, lai atjaunotos datnes izmērs lapā “Dati”.
 
-**Iestatījumi** (`build/build.py`, `SITE`): e-pasta adrese papildinājumiem (`contact_email`), versijas nosaukums, licence, versiju vēsture. Mērķu sasaiste ar rādītājiem – `TARGETS`.
-
-**Pirms galīgās publicēšanas:** noņemiet `<meta name="robots" content="noindex">` no HTML lapām un nomainiet `version_label` uz galīgo versiju.
+**Iestatījumi** (`build/build.py`, `SITE`): kontaktu e-pasts (`contact_email`), versijas nosaukums, licence, versiju vēsture. Mērķu sasaiste ar rādītājiem – `TARGETS`.
 
 ## Licences
 
