@@ -38,7 +38,7 @@ Vēlāk repozitoriju var nodot REA kontam (**Settings → Transfer ownership**) 
 2. Palaidiet: `pip install openpyxl` un `python3 build/build.py` (no repozitorija saknes).
 3. Augšupielādējiet mainītās datnes (`avoti/`, `assets/data.js`, `dati/`).
 
-Ja mainās pārskata PDF, aizstājiet `dati/Riga-SECAP-vidusposma-parskats-2026.pdf` (tas pats nosaukums) un palaidiet skriptu vēlreiz, lai atjaunotos datnes izmērs lapā “Dati”.
+Ja mainās pārskata PDF, aizstājiet `dati/Riga-SECAP-vidusposma-parskats-2026-final.pdf` (tas pats nosaukums) un palaidiet skriptu vēlreiz, lai atjaunotos datnes izmērs lapā “Dati”.
 
 **Iestatījumi** (`build/build.py`, `SITE`): kontaktu e-pasts (`contact_email`), versijas nosaukums, licence, versiju vēsture. Mērķu sasaiste ar rādītājiem – `TARGETS`.
 
